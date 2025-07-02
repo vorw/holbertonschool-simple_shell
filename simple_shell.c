@@ -1,61 +1,43 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include "main.h"
 
 /**
- * main - Entry point
- * Description: simple shell
- * Return: 0
+ * simple_shell - runs a simple shell loop
  */
-
-extern char **environ;
-
-int main(void)
+void simple_shell(void)
 {
 	char *line = NULL;
-	size_t size = 0;
-	ssize_t characters;
+	size_t len = 0;
+	ssize_t read;
 	pid_t pid;
 
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
-			printf("$ ");
-		characters = getline(&line, &size, stdin);
-		if (characters == -1)
-		{
-			printf("\n");
-			break;
-		}
-		if (line[characters - 1] == '\n')
-			line[characters - 1] = '\0';
-		pid = fork();
+			write(STDOUT_FILENO, "#cisfun$ ", 9);
 
+		read = getline(&line, &len, stdin);
+		if (read == -1)
+		{
+			free(line);
+			exit(0);
+		}
+
+		/* Remove newline */
+		if (line[read - 1] == '\n')
+			line[read - 1] = '\0';
+
+		pid = fork();
 		if (pid == 0)
 		{
-			char *args[2];
-			args[0] = line;
-			args[1] = NULL;
+			char *argv[] = {line, NULL};
 
-			if (execve(line, args, environ) == -1)
+			if (execve(argv[0], argv, environ) == -1)
 			{
-				perror("Error");
+				perror(argv[0]);
 				exit(EXIT_FAILURE);
 			}
 		}
-		else if (pid > 0)
-		{
-			wait(NULL);
-		}
 		else
-		{
-			perror("fork");
-			exit(EXIT_FAILURE);
-		}
+			wait(NULL);
 	}
-	free(line);
-	return (0);
 }
