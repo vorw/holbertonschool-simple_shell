@@ -1,14 +1,14 @@
 #include "main.h"
 
 /**
- * simple_shell - runs a simple shell loop
+ * simple_shell - basic UNIX command line interpreter
  */
 void simple_shell(void)
 {
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	pid_t pid;
+	pid_t child_pid;
 
 	while (1)
 	{
@@ -22,22 +22,29 @@ void simple_shell(void)
 			exit(0);
 		}
 
-		/* Remove newline */
 		if (line[read - 1] == '\n')
 			line[read - 1] = '\0';
 
-		pid = fork();
-		if (pid == 0)
+		child_pid = fork();
+		if (child_pid == -1)
+		{
+			perror("fork");
+			free(line);
+			exit(EXIT_FAILURE);
+		}
+		else if (child_pid == 0)
 		{
 			char *argv[] = {line, NULL};
 
 			if (execve(argv[0], argv, environ) == -1)
 			{
-				perror(argv[0]);
+				perror("./hsh");
 				exit(EXIT_FAILURE);
 			}
 		}
 		else
+		{
 			wait(NULL);
+		}
 	}
 }
