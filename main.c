@@ -1,40 +1,50 @@
 #include "shell.h"
 
 /**
- * main - Entry point for the shell program
+ * main - Entry point for the shell
+ * @ac: Argument count
+ * @av: Argument vector
  *
- * This function displays a prompt, waits for user input,
- * reads a line from standard input, tokenizes the input,
- * and executes the command.
- *
- * Return: 0 on success, 1 on error
+ * Return: 0 on success, otherwise 1
  */
-int main(void)
+int main(int ac, char **av)
 {
-	char *line = NULL;
-	size_t len = 0;
-	char *args[64];
-	int status = 0;
+	char *line = NULL, **args = NULL;
+	int status = 1, line_count = 0;
+	(void)ac;
 
-	while (1)
+	while (status)
 	{
+		int builtin_status;
+
 		if (isatty(STDIN_FILENO))
-			printf("$ ");
-		if (getline(&line, &len, stdin) == -1)
+			prompt();
+		line = read_line();
+		if (!line)
+			break;
+		line_count++;
+		args = split_line(line);
+		if (!args || !args[0])
 		{
-			if (isatty(STDIN_FILENO))
-				printf("\n");
 			free(line);
-			exit(status);
+			free(args);
+			continue;
 		}
-		line[strcspn(line, "\n")] = '\0';
-		tokenize(line, args);
-		if (args[0] == NULL)
+		builtin_status = handle_builtin(args);
+
+		if (builtin_status)
+		{
+			free(line);
+			free(args);
+			if (builtin_status == -1)
+				exit(0);
 			continue;
-		if (handle_exit_env(args, line, &status))
-			continue;
-		status = execute_command(args);
+		}
+		status = execute(args, av[0], line_count);
+		free(line);
+		free(args);
+		if (status != 1)
+			return (status);
 	}
-	free(line);
 	return (0);
 }
