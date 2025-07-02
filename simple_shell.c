@@ -15,13 +15,14 @@ extern char **environ;
 
 int main(void)
 {
-	char *line = NULL;
-	size_t size = 0;
-	ssize_t characters;
-	pid_t pid;
+char *line = NULL;
+size_t size = 0;
+ssize_t characters;
+pid_t pid;
 
-	while (1)
-	{
+while (1)
+{
+	if (isatty(STDIN_FILENO))
 		printf("$ ");
 		characters = getline(&line, &size, stdin);
 		if (characters == -1)
