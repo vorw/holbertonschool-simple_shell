@@ -35,7 +35,9 @@ int main(void)
 
 		if (pid == 0)
 		{
-			char *args[] = {line, NULL};
+			char *args[2];
+			args[0] = line;
+			args[1] = NULL;
 
 			if (execve(line, args, environ) == -1)
 			{
