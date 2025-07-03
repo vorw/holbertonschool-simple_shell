@@ -30,7 +30,14 @@ void execute_command(char **args, char *program_name)
 		exit(EXIT_FAILURE);
 	}
 	else if (pid > 0)
-		wait(NULL);
+	{
+		int status;
+		wait(&status);
+		if (WIFEXITED(status))
+			exit(WEXITSTATUS(status));
+		else
+			exit(1);
+}
 
 	if (full_path != args[0])
 		free(full_path);
