@@ -49,8 +49,17 @@ char *getenv_path(char *command)
 	char *dir = NULL;
 	char *full_path = NULL;
 	struct stat st;
+	int i;
 
-	path_env = getenv("PATH");
+	for (i = 0; environ[i]; i++)
+	{
+		if (strncmp(environ[i], "PATH=", 5) == 0)
+		{
+			path_env = environ[i] + 5;
+			break;
+		}
+	}
+
 	if (!path_env || strlen(path_env) == 0)
 		return (NULL);
 
