@@ -33,6 +33,7 @@ int main(int ac, char **av)
 		if (input[nread - 1] == '\n')
 			input[nread - 1] = '\0';
 
+		input = trim_spaces(input);
 		args = tokenize(input);
 		if (!args || !args[0])
 		{
