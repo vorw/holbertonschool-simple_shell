@@ -8,7 +8,6 @@
 void execute_command(char **args, char *program_name)
 {
 	pid_t pid;
-	char *path = NULL;
 	char *full_path = NULL;
 	struct stat st;
 
