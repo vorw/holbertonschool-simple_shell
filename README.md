@@ -14,7 +14,7 @@ This shell is compiled using the following command:
 
 ```bash
 gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
-
+```
 ## Usage
 
 Interactive Mode:
