@@ -1,91 +1,83 @@
-#include "shell.h"
+#include "simple_shell.h"
 
 /**
- * execute_command - Executes a command using fork and execve.
- * @args: Argument array.
- * @program_name: Name of the shell program.
- * @last_status: Pointer to store the exit status of the last command.
+ * run_command - Forks and runs external commands.
+ * @tokens: Command + arguments.
+ * @program_name: Name of shell.
+ * @status: Pointer to store exit status.
  */
-void execute_command(char **args, char *program_name, int *last_status)
+void run_command(char **tokens, char *program_name, int *status)
 {
 	pid_t pid;
-	char *full_path = NULL;
-	struct stat st;
+	char *cmd_path = NULL;
+	struct stat sb;
 
-	if (stat(args[0], &st) == 0)
-		full_path = args[0];
+	if (stat(tokens[0], &sb) == 0)
+		cmd_path = tokens[0];
 	else
-		full_path = getenv_path(args[0]);
+		cmd_path = resolve_path(tokens[0]);
 
-	if (!full_path)
+	if (!cmd_path)
 	{
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, args[0]);
-		*last_status = 127;
+		fprintf(stderr, "%s: 1: %s: not found\n", program_name, tokens[0]);
+		*status = 127;
 		return;
 	}
 
 	pid = fork();
 	if (pid == 0)
 	{
-		execve(full_path, args, environ);
+		execve(cmd_path, tokens, environ);
 		perror(program_name);
-		exit(EXIT_FAILURE);
+		exit(127);
 	}
 	else if (pid > 0)
-	{
-		int status;
-		waitpid(pid, &status, 0);
-		if (WIFEXITED(status))
-			*last_status = WEXITSTATUS(status);
-	}
+		waitpid(pid, status, 0);
 
-	if (full_path != args[0])
-		free(full_path);
+	if (cmd_path != tokens[0])
+		free(cmd_path);
 }
 
 /**
- * getenv_path - Finds the full path of a command in PATH.
- * @command: Command name.
+ * resolve_path - Builds the full path of a command using PATH.
+ * @cmd: Command name.
  *
  * Return: Full path or NULL.
  */
-char *getenv_path(char *command)
+char *resolve_path(char *cmd)
 {
-	char *path_env = NULL;
-	char *path_copy = NULL;
-	char *dir = NULL;
-	char *full_path = NULL;
+	char *path_val, *dir, *path_cp, *full_cmd;
 	struct stat st;
 
-	path_env = getenv("PATH");
-	if (!path_env || path_env[0] == '\0')
+	path_val = getenv("PATH");
+	if (!path_val || !*path_val)
 		return (NULL);
 
-	path_copy = strdup(path_env);
-	if (!path_copy)
+	path_cp = strdup(path_val);
+	if (!path_cp)
 		return (NULL);
 
-	dir = strtok(path_copy, ":");
-	while (dir != NULL)
+	dir = strtok(path_cp, ":");
+	while (dir)
 	{
-		full_path = malloc(strlen(dir) + strlen(command) + 2);
-		if (!full_path)
+		full_cmd = malloc(strlen(dir) + strlen(cmd) + 2);
+		if (!full_cmd)
 		{
-			free(path_copy);
+			free(path_cp);
 			return (NULL);
 		}
-		sprintf(full_path, "%s/%s", dir, command);
+		sprintf(full_cmd, "%s/%s", dir, cmd);
 
-		if (stat(full_path, &st) == 0)
+		if (stat(full_cmd, &st) == 0)
 		{
-			free(path_copy);
-			return (full_path);
+			free(path_cp);
+			return (full_cmd);
 		}
 
-		free(full_path);
+		free(full_cmd);
 		dir = strtok(NULL, ":");
 	}
 
-	free(path_copy);
+	free(path_cp);
 	return (NULL);
 }

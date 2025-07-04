@@ -1,29 +1,28 @@
-#include "shell.h"
+#include "simple_shell.h"
 
 /**
- * tokenize - Splits a string into tokens.
- * @input: The input string.
+ * split_line - Breaks a string into tokens by space.
+ * @line: Input string.
  *
- * Return: Array of strings (tokens).
+ * Return: Array of tokens.
  */
-char **tokenize(char *input)
+char **split_line(char *line)
 {
-	char **args = NULL;
-	char *token = NULL;
-	int i = 0;
+	char **tokens = NULL;
+	char *tok = NULL;
+	int idx = 0;
 
-	args = malloc(sizeof(char *) * 64);
-	if (!args)
+	tokens = malloc(sizeof(char *) * 64);
+	if (!tokens)
 		return (NULL);
 
-	token = strtok(input, " ");
-	while (token != NULL)
+	tok = strtok(line, " ");
+	while (tok)
 	{
-		args[i] = strdup(token);
-		i++;
-		token = strtok(NULL, " ");
+		tokens[idx++] = strdup(tok);
+		tok = strtok(NULL, " ");
 	}
-	args[i] = NULL;
+	tokens[idx] = NULL;
 
-	return (args);
+	return (tokens);
 }
