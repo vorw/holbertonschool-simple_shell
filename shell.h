@@ -16,5 +16,6 @@ void free_args(char **args);
 int handle_builtins(char **args, char *input);
 void execute_command(char **args, char *program_name);
 char *getenv_path(char *command);
+void exit_shell(char **args, char *input);
 
 #endif /* SHELL_H */

@@ -19,7 +19,7 @@ void execute_command(char **args, char *program_name)
 	if (!full_path)
 	{
 		fprintf(stderr, "%s: 1: %s: not found\n", program_name, args[0]);
-		exit(127);
+		return;
 	}
 
 	pid = fork();
@@ -44,20 +44,13 @@ void execute_command(char **args, char *program_name)
  */
 char *getenv_path(char *command)
 {
-	char *path_env = NULL, *path_copy = NULL, *dir = NULL, *full_path = NULL;
+	char *path_env = NULL;
+	char *path_copy = NULL;
+	char *dir = NULL;
+	char *full_path = NULL;
 	struct stat st;
-	int i = 0;
 
-	while (environ[i])
-	{
-		if (strncmp(environ[i], "PATH=", 5) == 0)
-		{
-			path_env = environ[i] + 5;
-			break;
-		}
-		i++;
-	}
-
+	path_env = getenv("PATH");
 	if (!path_env || path_env[0] == '\0')
 		return (NULL);
 

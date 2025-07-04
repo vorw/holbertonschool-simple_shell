@@ -18,3 +18,15 @@ void free_args(char **args)
 	}
 	free(args);
 }
+
+/**
+ * exit_shell - Frees memory and exits the shell.
+ * @args: Argument array to free.
+ * @input: Input buffer to free.
+ */
+void exit_shell(char **args, char *input)
+{
+	free_args(args);
+	free(input);
+	exit(0);
+}

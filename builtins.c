@@ -12,11 +12,7 @@ int handle_builtins(char **args, char *input)
 	int i;
 
 	if (strcmp(args[0], "exit") == 0)
-	{
-		free_args(args);
-		free(input);
-		exit(0);
-	}
+		exit_shell(args, input);
 
 	if (strcmp(args[0], "env") == 0)
 	{
