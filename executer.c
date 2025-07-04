@@ -39,17 +39,26 @@ void run_command(char **tokens, char *program_name, int *status)
 }
 
 /**
- * resolve_path - Builds the full path of a command using PATH.
+ * resolve_path - Builds the full path of a command using PATH (without getenv).
  * @cmd: Command name.
  *
  * Return: Full path or NULL.
  */
 char *resolve_path(char *cmd)
 {
-	char *path_val, *dir, *path_cp, *full_cmd;
+	char *path_val = NULL, *dir, *path_cp, *full_cmd;
 	struct stat st;
+	int i;
 
-	path_val = getenv("PATH");
+	for (i = 0; environ[i]; i++)
+	{
+		if (strncmp(environ[i], "PATH=", 5) == 0)
+		{
+			path_val = environ[i] + 5;
+			break;
+		}
+	}
+
 	if (!path_val || !*path_val)
 		return (NULL);
 
