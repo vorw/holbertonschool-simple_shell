@@ -1,2 +1,102 @@
+.TH SIMPLE_SHELL 1 "July 2025" "Holberton Project" "User Commands"
 .SH NAME
 simple shell \- A simple UNIX command interpreter
+.SH SYNOPSIS
+.B simple_shell
+.SH DESCRIPTION
+\fBsimple_shell\fR is a Unix shell mimick written in C. It reads input from standard input,
+parses it into tokens, and executes either built-in commands or external programs.
+
+The shell mimics the behavior of \fB/bin/sh\fR, and unless specified otherwise,
+must produce the exact same output and error messages.
+
+There's some difference in error messages though...
+
+.PP
+Example with \fB/bin/sh\fR:
+.sp
+\fB/bin/sh: 1: qwerty: not found\fR
+
+.PP
+Same error with \fBsimple_shell\fR called as \fB./hsh\fR:
+.sp
+\fB./hsh: 1: qwerty: not found\fR
+
+.SH MODES
+The shell works in two modes:
+
+.TP
+\fBInteractive mode\fR
+Displays a prompt \fB($) \fR, waits for user input, and executes commands one at a time.
+.sp
+Example:
+.sp
+.nf
+$ ./hsh
+($) /bin/ls
+file1 file2 shell.c
+($) exit
+$
+.fi
+
+.TP
+\fBNon-interactive mode\fR
+Reads commands from a script or a piped input and executes them line by line, without showing a prompt.
+.sp
+Examples:
+.sp
+.nf
+$ echo "/bin/ls" | ./hsh
+file1 file2 shell.c
+
+$ cat script.txt
+/bin/ls
+/bin/ls
+
+$ cat script.txt | ./hsh
+file1 file2 shell.c
+file1 file2 shell.c
+.fi
+
+.SH ENVIRONMENT
+.TP
+\fIPATH\fR
+A colon-separated list of directories where executables are searched. If \fIPATH\fR is
+unset or empty, commands without a slash ('/') will not be found.
+.TP
+\fIPATH1\fR
+Not used by \fBsimple_shell\fR.
+
+.SH USAGE
+After parsing user input:
+.IP
+- If the command matches a built-in, it is executed internally.
+.IP
+- Otherwise:
+.RS
+- If the command includes a '/' it is executed as a file path.
+- If it does not contain '/', the shell searches for it in \fIPATH\fR directories.
+.RE
+
+If the command is not found or cannot be executed, the shell prints:
+.sp
+    \fI<program_name>: 1: <command>: not found\fR
+.sp
+and returns status \fB127\fR.
+
+.SH BUILT-IN COMMANDS
+.TP
+\fBexit\fR
+Exit the shell with the status of the last executed command.
+.TP
+\fBenv\fR
+Print the current environment variables, one per line.
+
+.SH EXIT STATUS
+The shell returns the exit status of the last executed command. If no command is run, the default is 0.
+
+.SH AUTHORS
+Written by Sultan Alsanie and Mohammed Alayda.
+
+.SH SEE ALSO
+sh(1), bash(1)
