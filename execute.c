@@ -12,14 +12,17 @@ void execute_command(char **args, char *program_name)
 	struct stat st;
 
 	if (stat(args[0], &st) == 0)
-		full_path = args[0];
-	else
-		full_path = getenv_path(args[0]);
-
-	if (!full_path)
 	{
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, args[0]);
-		return;
+		full_path = args[0];
+	}
+	else
+	{
+		full_path = getenv_path(args[0]);
+		if (!full_path)
+		{
+			fprintf(stderr, "%s: 1: %s: not found\n", program_name, args[0]);
+			return;
+		}
 	}
 
 	pid = fork();
@@ -31,32 +34,27 @@ void execute_command(char **args, char *program_name)
 	}
 	else if (pid > 0)
 	{
-		int status;
-		wait(&status);
-		if (WIFEXITED(status))
-			exit(WEXITSTATUS(status));
-		else
-			exit(1);
-}
+		wait(NULL);
+	}
 
 	if (full_path != args[0])
 		free(full_path);
 }
 
 /**
- * getenv_path - Finds the full path of a command in PATH.
+ * getenv_path - Finds the full path of a command in PATH (manually).
  * @command: Command name.
  *
  * Return: Full path or NULL.
  */
 char *getenv_path(char *command)
 {
+	int i = 0;
 	char *path_env = NULL;
 	char *path_copy = NULL;
 	char *dir = NULL;
 	char *full_path = NULL;
 	struct stat st;
-	int i;
 
 	for (i = 0; environ[i]; i++)
 	{
@@ -67,7 +65,7 @@ char *getenv_path(char *command)
 		}
 	}
 
-	if (!path_env || strlen(path_env) == 0)
+	if (!path_env)
 		return (NULL);
 
 	path_copy = strdup(path_env);
@@ -75,11 +73,8 @@ char *getenv_path(char *command)
 		return (NULL);
 
 	dir = strtok(path_copy, ":");
-	while (dir != NULL)
+	while (dir)
 	{
-		if (dir[0] == '\0')
-			dir = ".";
-
 		full_path = malloc(strlen(dir) + strlen(command) + 2);
 		if (!full_path)
 		{
@@ -93,7 +88,6 @@ char *getenv_path(char *command)
 			free(path_copy);
 			return (full_path);
 		}
-
 		free(full_path);
 		dir = strtok(NULL, ":");
 	}

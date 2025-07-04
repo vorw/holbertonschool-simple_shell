@@ -16,6 +16,5 @@ void free_args(char **args);
 int handle_builtins(char **args, char *input);
 void execute_command(char **args, char *program_name);
 char *getenv_path(char *command);
-char *trim_spaces(char *str);
 
 #endif /* SHELL_H */
