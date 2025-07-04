@@ -8,34 +8,41 @@
  */
 void run_command(char **tokens, char *program_name, int *status)
 {
-	pid_t pid;
-	char *cmd_path = NULL;
-	struct stat sb;
+    pid_t pid;
+    char *cmd_path = NULL;
+    struct stat sb;
 
-	if (stat(tokens[0], &sb) == 0)
-		cmd_path = tokens[0];
-	else
-		cmd_path = resolve_path(tokens[0]);
+    if (strchr(tokens[0], '/'))
+    {
+        if (stat(tokens[0], &sb) == 0)
+            cmd_path = tokens[0];
+        else
+            cmd_path = NULL;
+    }
+    else
+    {
+        cmd_path = resolve_path(tokens[0]);
+    }
 
-	if (!cmd_path)
-	{
-		fprintf(stderr, "%s: 1: %s: not found\n", program_name, tokens[0]);
-		*status = 127;
-		return;
-	}
+    if (!cmd_path)
+    {
+        fprintf(stderr, "%s: 1: %s: not found\n", program_name, tokens[0]);
+        *status = 127;
+        return;
+    }
 
-	pid = fork();
-	if (pid == 0)
-	{
-		execve(cmd_path, tokens, environ);
-		perror(program_name);
-		exit(127);
-	}
-	else if (pid > 0)
-		waitpid(pid, status, 0);
+    pid = fork();
+    if (pid == 0)
+    {
+        execve(cmd_path, tokens, environ);
+        perror(program_name);
+        exit(127);
+    }
+    else if (pid > 0)
+        waitpid(pid, status, 0);
 
-	if (cmd_path != tokens[0])
-		free(cmd_path);
+    if (cmd_path != tokens[0])
+        free(cmd_path);
 }
 
 /**
@@ -46,47 +53,47 @@ void run_command(char **tokens, char *program_name, int *status)
  */
 char *resolve_path(char *cmd)
 {
-	char *path_val = NULL, *dir, *path_cp, *full_cmd;
-	struct stat st;
-	int i;
+    char *path_val = NULL, *dir, *path_cp, *full_cmd;
+    struct stat st;
+    int i;
 
-	for (i = 0; environ[i]; i++)
-	{
-		if (strncmp(environ[i], "PATH=", 5) == 0)
-		{
-			path_val = environ[i] + 5;
-			break;
-		}
-	}
+    for (i = 0; environ[i]; i++)
+    {
+        if (strncmp(environ[i], "PATH=", 5) == 0)
+        {
+            path_val = environ[i] + 5;
+            break;
+        }
+    }
 
-	if (!path_val || !*path_val)
-		return (NULL);
+    if (!path_val || !*path_val)
+        return (NULL);
 
-	path_cp = strdup(path_val);
-	if (!path_cp)
-		return (NULL);
+    path_cp = strdup(path_val);
+    if (!path_cp)
+        return (NULL);
 
-	dir = strtok(path_cp, ":");
-	while (dir)
-	{
-		full_cmd = malloc(strlen(dir) + strlen(cmd) + 2);
-		if (!full_cmd)
-		{
-			free(path_cp);
-			return (NULL);
-		}
-		sprintf(full_cmd, "%s/%s", dir, cmd);
+    dir = strtok(path_cp, ":");
+    while (dir)
+    {
+        full_cmd = malloc(strlen(dir) + strlen(cmd) + 2);
+        if (!full_cmd)
+        {
+            free(path_cp);
+            return (NULL);
+        }
+        sprintf(full_cmd, "%s/%s", dir, cmd);
 
-		if (stat(full_cmd, &st) == 0)
-		{
-			free(path_cp);
-			return (full_cmd);
-		}
+        if (stat(full_cmd, &st) == 0)
+        {
+            free(path_cp);
+            return (full_cmd);
+        }
 
-		free(full_cmd);
-		dir = strtok(NULL, ":");
-	}
+        free(full_cmd);
+        dir = strtok(NULL, ":");
+    }
 
-	free(path_cp);
-	return (NULL);
+    free(path_cp);
+    return (NULL);
 }
