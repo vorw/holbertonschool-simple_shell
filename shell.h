@@ -13,8 +13,8 @@ extern char **environ;
 
 char **tokenize(char *input);
 void free_args(char **args);
-int handle_builtins(char **args, char *input);
-void execute_command(char **args, char *program_name);
+int handle_builtin(char **args, char *input, int last_status);
+void execute_command(char **args, char *program_name, int *last_status);
 char *getenv_path(char *command);
 
 #endif /* SHELL_H */

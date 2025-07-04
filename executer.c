@@ -4,8 +4,9 @@
  * execute_command - Executes a command using fork and execve.
  * @args: Argument array.
  * @program_name: Name of the shell program.
+ * @last_status: Pointer to store the exit status of the last command.
  */
-void execute_command(char **args, char *program_name)
+void execute_command(char **args, char *program_name, int *last_status)
 {
 	pid_t pid;
 	char *full_path = NULL;
@@ -19,7 +20,8 @@ void execute_command(char **args, char *program_name)
 	if (!full_path)
 	{
 		fprintf(stderr, "%s: 1: %s: not found\n", program_name, args[0]);
-		exit(127);
+		*last_status = 127;
+		return;
 	}
 
 	pid = fork();
@@ -27,10 +29,15 @@ void execute_command(char **args, char *program_name)
 	{
 		execve(full_path, args, environ);
 		perror(program_name);
-		exit(127);
+		exit(EXIT_FAILURE);
 	}
 	else if (pid > 0)
-		wait(NULL);
+	{
+		int status;
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+			*last_status = WEXITSTATUS(status);
+	}
 
 	if (full_path != args[0])
 		free(full_path);
@@ -51,7 +58,7 @@ char *getenv_path(char *command)
 	struct stat st;
 
 	path_env = getenv("PATH");
-	if (!path_env || *path_env == '\0')
+	if (!path_env || path_env[0] == '\0')
 		return (NULL);
 
 	path_copy = strdup(path_env);

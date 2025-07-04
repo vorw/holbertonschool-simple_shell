@@ -14,6 +14,7 @@ int main(int ac, char **av)
 	size_t len = 0;
 	ssize_t nread;
 	int interactive = isatty(STDIN_FILENO);
+	int last_status = 0;
 
 	(void)ac;
 
@@ -40,10 +41,13 @@ int main(int ac, char **av)
 			continue;
 		}
 
-		if (handle_builtins(args, input))
+		if (handle_builtin(args, input, last_status))
+		{
+			free_args(args);
 			continue;
+		}
 
-		execute_command(args, av[0]);
+		execute_command(args, av[0], &last_status);
 		free_args(args);
 	}
 
